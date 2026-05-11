@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Orders — PawPals India</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+.orders-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+.order-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.order-id { font-weight: 700; font-size: 1.1rem; }
+.order-date { color: var(--text-light); font-size: 0.85rem; }
+.order-customer { font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px; }
+.order-items { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.order-items th, .order-items td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.order-items th { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; }
+.order-total { text-align: right; font-weight: 800; font-size: 1.1rem; margin-top: 8px; color: var(--primary); }
+.no-orders { text-align: center; padding: 60px 20px; }
+.admin-bar { background: #1A1A2E; color: white; text-align: center; padding: 12px; font-size: 0.85rem; }
+.admin-bar a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="admin-bar">🔐 Admin — <a href="index.html">View Store</a></div>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-icon">🐶</span>
+      <span>Paw<span>Pals</span></span>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="orders.html" class="active">Orders</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="orders-container">
+  <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:8px;">📦 Orders</h1>
+  <p style="color:var(--text-light);margin-bottom:24px;">Orders placed on this browser are stored locally.</p>
+  <button onclick="exportOrders()" class="btn btn-secondary btn-sm" style="margin-bottom:16px;">📥 Export All</button>
+  <button onclick="clearOrders()" class="btn btn-danger btn-sm" style="margin-bottom:16px;">🗑️ Clear All</button>
+  <div id="orders-list"></div>
+</div>
+
+<script>
+function loadOrders() {
+  const container = document.getElementById('orders-list');
+  try {
+    const orders = JSON.parse(localStorage.getItem('pawpals_orders') || '[]');
+    if (orders.length === 0) {
+      container.innerHTML = '<div class="no-orders"><div style="font-size:4rem;margin-bottom:16px;">📭</div><h2>No orders yet</h2><p>Orders you place will appear here.</p><a href="products.html" class="btn btn-primary" style="margin-top:16px;">Browse Products</a></div>';
+      return;
+    }
+    container.innerHTML = orders.slice().reverse().map(order => {
+      const date = new Date(order.date);
+      return `
+      <div class="order-card">
+        <div class="order-header">
+          <span class="order-id">#${order.id}</span>
+          <span class="order-date">${date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+        <div class="order-customer">
+          ${order.customer.name} · ${order.customer.phone} · ${order.customer.email}<br>
+          📍 ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}<br>
+          💳 ${order.customer.payment}
+        </div>
+        <table class="order-items">
+          <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+          ${order.items.map(item => `
+            <tr><td>${item.name}</td><td>${item.qty}</td><td>₹${item.price.toLocaleString()}</td><td>₹${(item.price * item.qty).toLocaleString()}</td></tr>
+          `).join('')}
+        </table>
+        <div class="order-total">Total: ₹${order.total.toLocaleString()}</div>
+        ${order.customer.notes ? `<div style="margin-top:8px;font-size:0.85rem;color:var(--text-light);"><strong>Notes:</strong> ${order.customer.notes}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<p style="color:var(--danger);">Error loading orders.</p>';
+  }
+}
+
+function exportOrders() {
+  try {
+    const orders = localStorage.getItem('pawpals_orders') || '[]';
+    const blob = new Blob([orders], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pawpals-orders-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  } catch(e) {
+    alert('Could not export orders.');
+  }
+}
+
+function clearOrders() {
+  if (confirm('Delete all orders? This cannot be undone.')) {
+    localStorage.removeItem('pawpals_orders');
+    loadOrders();
+  }
+}
+
+loadOrders();
+</script>
+</body>
+</html>
