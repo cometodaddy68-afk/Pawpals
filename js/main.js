@@ -209,6 +209,7 @@ function initCheckout() {
       orders.push(order);
       localStorage.setItem('pawpals_orders', JSON.stringify(orders));
       localStorage.removeItem('pawpals_cart');
+      sendTelegramNotification(order);
       showToast('Order placed successfully! 🎉', 'success');
       setTimeout(() => {
         window.location.href = `order-success.html?id=${order.id}`;
