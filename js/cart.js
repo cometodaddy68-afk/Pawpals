@@ -7,9 +7,9 @@ function saveCart(cart) {
 function sendTelegramNotification(order) {
   const token = '8208873710:AAH7hiLC05GTbyf4PJYgmB5xgdXXDuMq_hA';
   const chatId = '6173560671';
-  const items = order.items.map(i => `• ${i.name} × ${i.qty} = ₹${(i.price * i.qty).toLocaleString()}`).join('%0A');
-  const text = `🛒 *New Order!*%0A%0A📋 *#${order.id}*%0A👤 ${order.customer.name}%0A📞 ${order.customer.phone}%0A📧 ${order.customer.email}%0A📍 ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}%0A💳 ${order.customer.payment}%0A%0A*Items:*%0A${items}%0A%0A💰 *Total: ₹${order.total.toLocaleString()}*`;
-  new Image().src = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${text}&parse_mode=Markdown`;
+  const items = order.items.map(i => `• ${i.name} × ${i.qty} = ₹${(i.price * i.qty).toLocaleString()}`).join('\n');
+  const text = `🛒 *New Order!*\n\n📋 *#${order.id}*\n👤 ${order.customer.name}\n📞 ${order.customer.phone}\n📧 ${order.customer.email}\n📍 ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}\n💳 ${order.customer.payment}\n\n*Items:*\n${items}\n\n💰 *Total: ₹${order.total.toLocaleString()}*`;
+  new Image().src = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
 }
 
 updateCartCount();
