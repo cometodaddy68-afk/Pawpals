@@ -12,7 +12,7 @@ echo "=============================="
 pkg update -y
 pkg upgrade -y
 pkg install -y x11-repo tur-repo proot-distro git wget curl \
-  tigervnc x11vnc openssh termux-x11 pulseaudio
+  openssh termux-x11-nightly tigervnc
 
 # 2. Install Ubuntu via proot
 echo "[*] Installing Ubuntu..."
@@ -23,7 +23,7 @@ proot-distro login ubuntu -- bash -c "
   export DEBIAN_FRONTEND=noninteractive
   apt update -y
   apt install -y xfce4 xfce4-goodies firefox chromium \
-    x11vnc curl wget nano htop dbus-x11 \
+    x11vnc curl wget nano dbus-x11 \
     xfce4-terminal thunar
 
   # Set VNC password (same for x11vnc)
