@@ -143,8 +143,12 @@ function getApiKey() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('openrouter_key') || '';
-  if (saved) document.getElementById('api-key').value = saved;
+  const urlKey = new URLSearchParams(window.location.search).get('key');
+  const saved = urlKey || localStorage.getItem('openrouter_key') || '';
+  if (saved) {
+    document.getElementById('api-key').value = saved;
+    localStorage.setItem('openrouter_key', saved);
+  }
 });
 
 async function generateDescription() {
