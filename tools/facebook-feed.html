@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook Product Feed Generator — PawPals Tools</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tool-container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+pre { background: #1A1A2E; color: #fff; padding: 16px; border-radius: var(--radius-sm); overflow-x: auto; font-size: 0.8rem; max-height: 400px; white-space: pre-wrap; }
+.csv-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.csv-table th, .csv-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; }
+.csv-table th { background: var(--bg); }
+.step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; padding: 16px; background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); }
+.step-num { min-width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo"><span class="logo-icon">🐶</span><span>Paw<span>Pals</span></span></a>
+    <nav class="nav">
+      <a href="../index.html">Home</a>
+      <a href="../products.html">Products</a>
+      <a href="../orders.html">Orders</a>
+      <a href="index.html" class="active">Tools</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="tool-container">
+  <div class="tool-header">
+    <h1>📱 Facebook & Instagram Product Feed</h1>
+    <p>Generate a ready-to-upload CSV feed for Facebook Shops, Instagram Shopping, and Google Merchant.</p>
+  </div>
+
+  <button class="btn btn-primary" onclick="generateFeed()" style="width:100%;justify-content:center;margin-bottom:16px;">📥 Generate & Download CSV Feed</button>
+
+  <div id="feed-preview" style="display:none;">
+    <h3 style="margin-bottom:12px;">📊 Preview (first 5 products)</h3>
+    <div style="overflow-x:auto;" id="preview-table"></div>
+    <p style="margin:8px 0;font-size:0.85rem;color:var(--text-light);">Total: <span id="feed-count"></span> products ready for Facebook.</p>
+  </div>
+
+  <h3 style="margin:24px 0 12px;">📖 How to Upload to Facebook</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div><strong>Go to Facebook Commerce Manager</strong><br><a href="https://business.facebook.com/commerce" target="_blank">business.facebook.com/commerce</a></div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div><strong>Add a catalog</strong> → Select "Products" → Choose "Upload product info"</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div><strong>Upload the CSV file</strong> you downloaded from this page</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div><strong>Set up Instagram Shopping</strong> → Connect catalog to Instagram account</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div>Products will be reviewed by Facebook (24-48 hrs) and appear on your Shop</div>
+  </div>
+
+  <h3 style="margin:24px 0 12px;">🔄 Auto-Sync (for regular updates)</h3>
+  <p style="color:var(--text-light);">Regenerate and re-upload this CSV weekly after adding/updating products. For fully automated sync, a server is needed — contact me to set up a scheduled solution.</p>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div><div class="logo-text">🐶 Paw<span>Pals</span></div><p style="margin-top:12px;">India's trusted dropshipping store for premium pet products.</p></div>
+    <div><h3>Quick Links</h3><ul><li><a href="../index.html">Home</a></li><li><a href="../products.html">Products</a></li><li><a href="index.html">Tools</a></li></ul></div>
+    <div><h3>Tools</h3><ul><li><a href="ai-description.html">AI Description</a></li><li><a href="facebook-feed.html">Facebook Feed</a></li><li><a href="product-importer.html">Product Importer</a></li></ul></div>
+    <div><h3>Contact</h3><ul><li><a href="#">📧 hello@pawpals.in</a></li><li><a href="#">💬 WhatsApp</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 PawPals India. Automation tools for dropshipping.</p></div>
+</footer>
+
+<script src="../js/data.js"></script>
+<script>
+function generateFeed() {
+  const storeUrl = 'https://cometodaddy68-afk.github.io/Pawpals';
+  const headers = ['id','title','description','availability','condition','price','link','image_link','brand','category','product_type','google_product_category','sale_price','gtin','mpn','item_group_id','color','size','material','pattern','gender','age_group'];
+
+  const rows = products.map(p => {
+    const salePrice = p.originalPrice ? p.originalPrice : '';
+    return [
+      `PP${p.id}`,
+      p.name,
+      p.description.replace(/,/g, ';').replace(/\n/g, ' '),
+      'in stock',
+      'new',
+      `INR ${p.price}.00`,
+      `${storeUrl}/product-detail.html?id=${p.id}`,
+      p.image,
+      'PawPals India',
+      p.category,
+      `Pet Supplies > ${p.category}`,
+      p.category === 'Toys' ? '4285' : p.category === 'Bedding' ? '4320' : p.category === 'Travel' ? '4369' : '4372',
+      salePrice ? `INR ${salePrice}.00` : '',
+      '', '', '', '', '', '', '', '', ''
+    ];
+  });
+
+  const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
+
+  // Preview first 5
+  document.getElementById('feed-preview').style.display = 'block';
+  document.getElementById('feed-count').textContent = rows.length;
+
+  let tableHtml = '<table class="csv-table"><tr><th>ID</th><th>Title</th><th>Price</th><th>Link</th></tr>';
+  rows.slice(0,5).forEach(r => {
+    tableHtml += `<tr><td>${r[0]}</td><td>${r[1].substring(0,30)}...</td><td>${r[4]}</td><td><a href="${r[6]}" target="_blank">View</a></td></tr>`;
+  });
+  tableHtml += '</table>';
+  document.getElementById('preview-table').innerHTML = tableHtml;
+
+  // Download
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pawpals-facebook-feed-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast(`Downloaded! ${rows.length} products in feed.`, 'success');
+}
+</script>
+</body>
+</html>

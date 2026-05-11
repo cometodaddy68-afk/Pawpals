@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Orders — PawPals India</title>
+<title>Orders — PawPals Admin</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-.orders-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+.orders-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 .order-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
 .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
 .order-id { font-weight: 700; font-size: 1.1rem; }
@@ -19,23 +19,23 @@
 .no-orders { text-align: center; padding: 60px 20px; }
 .admin-bar { background: #1A1A2E; color: white; text-align: center; padding: 12px; font-size: 0.85rem; }
 .admin-bar a { color: var(--accent); }
+.actions-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.order-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.order-status { display: inline-block; padding: 2px 10px; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; }
+.status-new { background: #DBEAFE; color: #1E40AF; }
+.status-forwarded { background: #FEF3C7; color: #92400E; }
+.status-delivered { background: #D1FAE5; color: #065F46; }
 </style>
 </head>
 <body>
 
-<div class="admin-bar">🔐 Admin — <a href="index.html">View Store</a></div>
+<div class="admin-bar">🔐 Admin — <a href="index.html">View Store</a> | <a href="tools/index.html">Tools</a> | <a href="products.html">Products</a></div>
 
 <header class="header">
   <div class="header-inner">
-    <a href="index.html" class="logo">
-      <span class="logo-icon">🐶</span>
-      <span>Paw<span>Pals</span></span>
-    </a>
+    <a href="index.html" class="logo"><span class="logo-icon">🐶</span><span>Paw<span>Pals</span></span></a>
     <nav class="nav">
-      <a href="index.html">Home</a>
-      <a href="products.html">Products</a>
-      <a href="orders.html" class="active">Orders</a>
-      <a href="contact.html">Contact</a>
+      <a href="index.html">Home</a><a href="products.html">Products</a><a href="orders.html" class="active">Orders</a><a href="tools/index.html">Tools</a>
     </nav>
     <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
@@ -43,42 +43,90 @@
 
 <div class="orders-container">
   <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:8px;">📦 Orders</h1>
-  <p style="color:var(--text-light);margin-bottom:24px;">Orders placed on this browser are stored locally.</p>
-  <button onclick="exportOrders()" class="btn btn-secondary btn-sm" style="margin-bottom:16px;">📥 Export All</button>
-  <button onclick="clearOrders()" class="btn btn-danger btn-sm" style="margin-bottom:16px;">🗑️ Clear All</button>
+  <p style="color:var(--text-light);margin-bottom:24px;">Orders appear here automatically. Forward to supplier with one click.</p>
+
+  <div class="actions-bar">
+    <button onclick="exportOrdersJSON()" class="btn btn-secondary btn-sm">📥 JSON Export</button>
+    <button onclick="exportOrdersCSV()" class="btn btn-secondary btn-sm">📊 CSV Export</button>
+    <button onclick="clearOrders()" class="btn btn-danger btn-sm">🗑️ Clear All</button>
+    <span id="order-count" style="margin-left:auto;font-size:0.85rem;color:var(--text-light);align-self:center;"></span>
+  </div>
+
+  <div style="margin-bottom:16px;padding:12px;background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius);">
+    <label style="font-weight:600;display:block;margin-bottom:4px;">📧 Supplier Email (for auto-forwarding)</label>
+    <div style="display:flex;gap:8px;">
+      <input type="email" id="supplier-email" placeholder="supplier@example.com" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+      <button onclick="saveSupplierEmail()" class="btn btn-sm btn-primary">Save</button>
+    </div>
+  </div>
+
   <div id="orders-list"></div>
 </div>
 
+<footer class="footer">
+  <div class="footer-inner">
+    <div><div class="logo-text">🐶 Paw<span>Pals</span></div><p style="margin-top:12px;">India's trusted dropshipping store.</p></div>
+    <div><h3>Links</h3><ul><li><a href="index.html">Home</a></li><li><a href="products.html">Products</a></li><li><a href="tools/index.html">Tools</a></li></ul></div>
+    <div><h3>Tools</h3><ul><li><a href="tools/ai-description.html">AI Description</a></li><li><a href="tools/facebook-feed.html">Facebook Feed</a></li></ul></div>
+    <div><h3>Contact</h3><ul><li><a href="#">📧 hello@pawpals.in</a></li><li><a href="#">💬 WhatsApp</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 PawPals India.</p></div>
+</footer>
+
 <script>
+let orders = [];
+
 function loadOrders() {
   const container = document.getElementById('orders-list');
   try {
-    const orders = JSON.parse(localStorage.getItem('pawpals_orders') || '[]');
+    orders = JSON.parse(localStorage.getItem('pawpals_orders') || '[]');
+    document.getElementById('order-count').textContent = `${orders.length} total orders`;
+
+    const supplierEmail = localStorage.getItem('pawpals_supplier_email') || '';
+    if (supplierEmail) document.getElementById('supplier-email').value = supplierEmail;
+
     if (orders.length === 0) {
-      container.innerHTML = '<div class="no-orders"><div style="font-size:4rem;margin-bottom:16px;">📭</div><h2>No orders yet</h2><p>Orders you place will appear here.</p><a href="products.html" class="btn btn-primary" style="margin-top:16px;">Browse Products</a></div>';
+      container.innerHTML = '<div class="no-orders"><div style="font-size:4rem;margin-bottom:16px;">📭</div><h2>No orders yet</h2><p>Orders placed on the store will appear here.</p></div>';
       return;
     }
+
+    const statuses = JSON.parse(localStorage.getItem('pawpals_order_statuses') || '{}');
+
     container.innerHTML = orders.slice().reverse().map(order => {
       const date = new Date(order.date);
+      const status = statuses[order.id] || 'new';
+      const statusClass = `status-${status}`;
+      const statusLabel = status === 'new' ? 'New' : status === 'forwarded' ? 'Forwarded' : 'Delivered';
       return `
       <div class="order-card">
         <div class="order-header">
-          <span class="order-id">#${order.id}</span>
+          <div><span class="order-id">#${order.id}</span> <span class="order-status ${statusClass}">${statusLabel}</span></div>
           <span class="order-date">${date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
         </div>
         <div class="order-customer">
-          ${order.customer.name} · ${order.customer.phone} · ${order.customer.email}<br>
+          <strong>${order.customer.name}</strong> · ${order.customer.phone} · ${order.customer.email}<br>
           📍 ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}<br>
-          💳 ${order.customer.payment}
+          💳 ${order.customer.payment} ${order.customer.notes ? '· 📝 ' + order.customer.notes : ''}
         </div>
         <table class="order-items">
-          <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+          <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th><th>Supplier Link</th></tr>
           ${order.items.map(item => `
-            <tr><td>${item.name}</td><td>${item.qty}</td><td>₹${item.price.toLocaleString()}</td><td>₹${(item.price * item.qty).toLocaleString()}</td></tr>
+            <tr>
+              <td>${item.name}</td>
+              <td>${item.qty}</td>
+              <td>₹${item.price.toLocaleString()}</td>
+              <td>₹${(item.price * item.qty).toLocaleString()}</td>
+              <td><input type="url" class="supplier-link" data-order="${order.id}" data-item="${item.id}" placeholder="Supplier product URL" style="width:120px;padding:2px 6px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px;" value="${getSupplierLink(order.id, item.id)}"></td>
+            </tr>
           `).join('')}
         </table>
         <div class="order-total">Total: ₹${order.total.toLocaleString()}</div>
-        ${order.customer.notes ? `<div style="margin-top:8px;font-size:0.85rem;color:var(--text-light);"><strong>Notes:</strong> ${order.customer.notes}</div>` : ''}
+        <div class="order-actions">
+          <button class="btn btn-sm btn-primary" onclick="forwardToSupplier('${order.id}')">📧 Forward to Supplier</button>
+          <button class="btn btn-sm btn-secondary" onclick="markStatus('${order.id}','forwarded')">✅ Mark Forwarded</button>
+          <button class="btn btn-sm btn-secondary" onclick="markStatus('${order.id}','delivered')">📦 Mark Delivered</button>
+          <button class="btn btn-sm btn-outline" onclick="copyOrderSummary('${order.id}')" style="border-color:var(--border);color:var(--text);">📋 Copy Summary</button>
+        </div>
       </div>`;
     }).join('');
   } catch(e) {
@@ -86,27 +134,117 @@ function loadOrders() {
   }
 }
 
-function exportOrders() {
-  try {
-    const orders = localStorage.getItem('pawpals_orders') || '[]';
-    const blob = new Blob([orders], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `pawpals-orders-${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-  } catch(e) {
-    alert('Could not export orders.');
+function getSupplierLink(orderId, itemId) {
+  const links = JSON.parse(localStorage.getItem('pawpals_supplier_links') || '{}');
+  return links[`${orderId}_${itemId}`] || '';
+}
+
+function saveSupplierLink(orderId, itemId, url) {
+  const links = JSON.parse(localStorage.getItem('pawpals_supplier_links') || '{}');
+  links[`${orderId}_${itemId}`] = url;
+  localStorage.setItem('pawpals_supplier_links', JSON.stringify(links));
+}
+
+function saveSupplierEmail() {
+  const email = document.getElementById('supplier-email').value.trim();
+  localStorage.setItem('pawpals_supplier_email', email);
+  showToast('Supplier email saved!', 'success');
+}
+
+function forwardToSupplier(orderId) {
+  const order = orders.find(o => o.id === orderId);
+  if (!order) return;
+
+  const supplierEmail = localStorage.getItem('pawpals_supplier_email');
+  if (!supplierEmail) {
+    showToast('Please set supplier email first', 'error');
+    return;
   }
+
+  const items = order.items.map(i => {
+    const link = getSupplierLink(orderId, i.id);
+    return `${i.name} × ${i.qty} = ₹${(i.price * i.qty).toLocaleString()}${link ? ' (' + link + ')' : ''}`;
+  }).join('\n');
+
+  const subject = encodeURIComponent(`New Order #${orderId} — Please Process`);
+  const body = encodeURIComponent(
+    `NEW ORDER #${orderId}\n${'-'.repeat(30)}\n\n` +
+    `Customer: ${order.customer.name}\n` +
+    `Phone: ${order.customer.phone}\n` +
+    `Email: ${order.customer.email}\n` +
+    `Address: ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}\n\n` +
+    `ITEMS:\n${items}\n\n` +
+    `Total: ₹${order.total.toLocaleString()}\n\n` +
+    `Payment: ${order.customer.payment}\n` +
+    `${order.customer.notes ? 'Notes: ' + order.customer.notes + '\n' : ''}` +
+    `${'-'.repeat(30)}\nSent automatically from PawPals Store`
+  );
+
+  window.open(`mailto:${supplierEmail}?subject=${subject}&body=${body}`, '_blank');
+  markStatus(orderId, 'forwarded');
+  showToast(`Order forwarded to ${supplierEmail}`, 'success');
+}
+
+function markStatus(orderId, status) {
+  const statuses = JSON.parse(localStorage.getItem('pawpals_order_statuses') || '{}');
+  statuses[orderId] = status;
+  localStorage.setItem('pawpals_order_statuses', JSON.stringify(statuses));
+  loadOrders();
+}
+
+function copyOrderSummary(orderId) {
+  const order = orders.find(o => o.id === orderId);
+  if (!order) return;
+  const text = `Order #${order.id}\nCustomer: ${order.customer.name}, ${order.customer.phone}\nItems: ${order.items.map(i => `${i.name} x${i.qty}`).join(', ')}\nTotal: ₹${order.total.toLocaleString()}\nStatus: ${JSON.parse(localStorage.getItem('pawpals_order_statuses') || '{}')[order.id] || 'New'}`;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied!', 'success'));
+}
+
+function exportOrdersJSON() {
+  const blob = new Blob([JSON.stringify(orders, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pawpals-orders-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function exportOrdersCSV() {
+  const rows = [['OrderID','Date','Customer','Phone','Email','Address','City','State','Pincode','Payment','Product','Qty','Price','Total','Notes']];
+  orders.forEach(order => {
+    const date = new Date(order.date).toISOString().slice(0,10);
+    const c = order.customer;
+    order.items.forEach(item => {
+      rows.push([order.id, date, c.name, c.phone, c.email, c.address, c.city, c.state, c.pincode, c.payment, item.name, item.qty, item.price, item.price * item.qty, c.notes || '']);
+    });
+  });
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pawpals-orders-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
 }
 
 function clearOrders() {
-  if (confirm('Delete all orders? This cannot be undone.')) {
+  if (confirm('Delete ALL orders? Cannot undo.')) {
     localStorage.removeItem('pawpals_orders');
+    localStorage.removeItem('pawpals_order_statuses');
     loadOrders();
   }
 }
 
+// Auto-save supplier links on change
+document.addEventListener('change', function(e) {
+  if (e.target.classList.contains('supplier-link')) {
+    const orderId = e.target.dataset.order;
+    const itemId = e.target.dataset.item;
+    saveSupplierLink(orderId, itemId, e.target.value);
+  }
+});
+
 loadOrders();
 </script>
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

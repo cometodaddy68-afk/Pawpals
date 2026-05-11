@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk Product Importer — PawPals Tools</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tool-container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+.sample-data { background: var(--bg); padding: 12px; border-radius: var(--radius-sm); font-size: 0.8rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; margin: 8px 0; }
+.import-preview { margin-top: 16px; }
+.import-item { display: flex; align-items: center; gap: 12px; padding: 8px; border-bottom: 1px solid var(--border); }
+.import-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo"><span class="logo-icon">🐶</span><span>Paw<span>Pals</span></span></a>
+    <nav class="nav">
+      <a href="../index.html">Home</a>
+      <a href="../products.html">Products</a>
+      <a href="../orders.html">Orders</a>
+      <a href="index.html" class="active">Tools</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="tool-container">
+  <div class="tool-header">
+    <h1>📦 Bulk Product Importer</h1>
+    <p>Add products in bulk by pasting JSON or importing from supplier CSV.</p>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <label style="font-weight:600;display:block;margin-bottom:8px;">Paste product data (JSON format):</label>
+    <textarea id="import-json" rows="8" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:monospace;font-size:0.85rem;" placeholder='[{&#10;  "name": "Product Name",&#10;  "category": "Toys",&#10;  "price": 999,&#10;  "image": "https://...",&#10;  "description": "Product description",&#10;  "features": ["feat1", "feat2"]&#10;}]'></textarea>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <button class="btn btn-primary" onclick="previewImport()" style="margin-right:8px;">👁️ Preview</button>
+    <button class="btn btn-secondary" onclick="doImport()" id="import-btn" disabled>📥 Import to Store</button>
+    <button class="btn btn-outline" onclick="loadSample()" style="border-color:var(--border);color:var(--text);">📋 Load Sample</button>
+  </div>
+
+  <div id="import-preview" class="import-preview" style="display:none;"></div>
+
+  <hr style="margin:24px 0;border-color:var(--border);">
+
+  <h3 style="margin-bottom:12px;">🧾 Supplier CSV Import</h3>
+  <p style="font-size:0.9rem;color:var(--text-light);margin-bottom:12px;">Paste CSV from AliExpress, Meesho, or Amazon supplier sheet:</p>
+  <textarea id="csv-import" rows="6" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:monospace;font-size:0.85rem;margin-bottom:12px;" placeholder="name,price,category,image,description&#10;Pet Toy,599,Toys,https://...,Description here"></textarea>
+  <button class="btn btn-secondary" onclick="importCSV()">📥 Parse CSV</button>
+
+  <h3 style="margin:24px 0 12px;">📤 Export All Products (JSON)</h3>
+  <button class="btn btn-primary" onclick="exportAllProducts()">📥 Download products.json</button>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div><div class="logo-text">🐶 Paw<span>Pals</span></div><p style="margin-top:12px;">India's trusted dropshipping store for premium pet products.</p></div>
+    <div><h3>Quick Links</h3><ul><li><a href="../index.html">Home</a></li><li><a href="../products.html">Products</a></li><li><a href="index.html">Tools</a></li></ul></div>
+    <div><h3>Tools</h3><ul><li><a href="ai-description.html">AI Description</a></li><li><a href="facebook-feed.html">Facebook Feed</a></li><li><a href="product-importer.html">Product Importer</a></li></ul></div>
+    <div><h3>Contact</h3><ul><li><a href="#">📧 hello@pawpals.in</a></li><li><a href="#">💬 WhatsApp</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 PawPals India. Automation tools for dropshipping.</p></div>
+</footer>
+
+<script>
+let importedProducts = [];
+
+function loadSample() {
+  const sample = JSON.stringify([
+    { "name": "Premium Cat Tunnel", "category": "Toys", "price": 799, "originalPrice": 1099, "image": "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=400&h=400&fit=crop", "description": "Collapsible cat tunnel with crinkle sound, dangling toy, and peek-a-boo holes.", "features": ["Crinkle texture", "Dangling toy", "Folds flat"] },
+    { "name": "Pet Travel Water Bottle", "category": "Travel", "price": 399, "originalPrice": 599, "image": "https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=400&h=400&fit=crop", "description": "Leak-proof bottle with built-in drinking bowl. Perfect for walks.", "features": ["BPA-free", "500ml", "Carabiner clip"] },
+    { "name": "Dog Toothbrush Kit", "category": "Grooming", "price": 299, "image": "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=400&h=400&fit=crop", "description": "Dual-ended toothbrush with enzymatic toothpaste.", "features": ["Dual head", "Enzymatic paste", "Finger brush"] }
+  ], null, 2);
+  document.getElementById('import-json').value = sample;
+  previewImport();
+}
+
+function previewImport() {
+  try {
+    importedProducts = JSON.parse(document.getElementById('import-json').value);
+    if (!Array.isArray(importedProducts)) throw 'Not an array';
+    const container = document.getElementById('import-preview');
+    container.style.display = 'block';
+    container.innerHTML = `<strong>Preview (${importedProducts.length} products):</strong>` +
+      importedProducts.map((p, i) => `
+        <div class="import-item">
+          <img src="${p.image || ''}" alt="">
+          <div style="flex:1;"><strong>${p.name}</strong><br><span style="font-size:0.85rem;color:var(--text-light);">₹${p.price} · ${p.category || 'N/A'}</span></div>
+        </div>
+      `).join('');
+    document.getElementById('import-btn').disabled = false;
+    showToast(`${importedProducts.length} products ready to import`, 'success');
+  } catch(e) {
+    showToast('Invalid JSON format', 'error');
+  }
+}
+
+function doImport() {
+  if (importedProducts.length === 0) return;
+  const existing = JSON.parse(localStorage.getItem('pawpals_custom_products') || '[]');
+  const maxId = Math.max(...products.map(p => p.id), ...existing.map(p => p.id), 52);
+  const newProducts = importedProducts.map((p, i) => ({
+    id: maxId + i + 1,
+    name: p.name,
+    category: p.category || 'General',
+    price: p.price,
+    originalPrice: p.originalPrice || null,
+    rating: 4.0,
+    reviews: 0,
+    image: p.image || 'https://images.unsplash.com/photo-1545249390-6bdfa286032f?w=400&h=400&fit=crop',
+    badge: 'New',
+    description: p.description || '',
+    features: p.features || []
+  }));
+  existing.push(...newProducts);
+  localStorage.setItem('pawpals_custom_products', JSON.stringify(existing));
+  showToast(`✅ ${newProducts.length} products imported! Refresh data.js to make them permanent.`, 'success');
+}
+
+function importCSV() {
+  const csv = document.getElementById('csv-import').value.trim();
+  if (!csv) { showToast('Paste CSV data first', 'error'); return; }
+  const lines = csv.split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const products = lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/^"(.*)"$/, '$1'));
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] || '');
+    return { name: obj.name || vals[0], price: parseInt(obj.price || vals[1]) || 0, category: obj.category || vals[2] || 'General', image: obj.image || vals[3] || '', description: obj.description || vals[4] || '' };
+  });
+  document.getElementById('import-json').value = JSON.stringify(products, null, 2);
+  showToast(`Parsed ${products.length} products from CSV`, 'success');
+  previewImport();
+}
+
+function exportAllProducts() {
+  const all = [...products, ...JSON.parse(localStorage.getItem('pawpals_custom_products') || '[]')];
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pawpals-all-products-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  showToast(`Exported ${all.length} products`, 'success');
+}
+</script>
+</body>
+</html>

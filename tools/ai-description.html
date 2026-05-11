@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Product Description Generator — PawPals Tools</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tool-container { max-width: 700px; margin: 0 auto; padding: 40px 20px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none; }
+.form-group textarea { min-height: 100px; resize: vertical; }
+.form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+.result-box { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-top: 20px; white-space: pre-wrap; display: none; }
+.tag-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tag { background: var(--bg); padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border); }
+.tag.selected { background: var(--primary); color: white; border-color: var(--primary); }
+.features-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.features-list input { width: auto; margin-right: 4px; }
+.tool-header { text-align: center; margin-bottom: 32px; }
+.tool-header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+.tool-header p { color: var(--text-light); }
+.loading { display: none; align-items: center; gap: 12px; padding: 16px; background: var(--bg); border-radius: var(--radius); margin-top: 16px; }
+.usage-counter { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 8px; }
+.copy-btn { cursor: pointer; padding: 6px 16px; background: var(--bg); border-radius: var(--radius-sm); font-size: 0.85rem; }
+.copy-btn:hover { background: var(--primary); color: white; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo"><span class="logo-icon">🐶</span><span>Paw<span>Pals</span></span></a>
+    <nav class="nav">
+      <a href="../index.html">Home</a>
+      <a href="../products.html">Products</a>
+      <a href="../orders.html">Orders</a>
+      <a href="index.html" class="active">Tools</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="tool-container">
+  <div class="tool-header">
+    <h1>🤖 AI Product Description Generator</h1>
+    <p>Generate professional product descriptions using AI. Powered by OpenRouter (free).</p>
+  </div>
+
+  <div class="form-group">
+    <label>Product Name *</label>
+    <input type="text" id="prod-name" placeholder="e.g. Orthopedic Memory Foam Pet Bed" oninput="suggestions()">
+  </div>
+
+  <div class="form-group">
+    <label>Category</label>
+    <select id="prod-category">
+      <option value="">Select...</option>
+      <option>Toys</option><option>Bedding</option><option>Travel</option>
+      <option>Feeders</option><option>Accessories</option><option>Furniture</option>
+      <option>Grooming</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Tone / Style</label>
+    <div class="tag-grid" id="tone-tags">
+      <span class="tag selected" onclick="selectTone(this)">Professional</span>
+      <span class="tag" onclick="selectTone(this)">Friendly</span>
+      <span class="tag" onclick="selectTone(this)">Luxury</span>
+      <span class="tag" onclick="selectTone(this)">Funny</span>
+      <span class="tag" onclick="selectTone(this)">SEO Optimized</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Key Features (comma separated)</label>
+    <input type="text" id="prod-features" placeholder="e.g. memory foam, waterproof, machine washable" list="feature-suggestions">
+    <datalist id="feature-suggestions">
+      <option value="Waterproof"><option value="Machine washable"><option value="Non-toxic">
+      <option value="Durable"><option value="Lightweight"><option value="Adjustable">
+      <option value="Breathable"><option value="Eco-friendly"><option value="Portable">
+    </datalist>
+  </div>
+
+  <div class="form-group">
+    <label>Target Audience</label>
+    <input type="text" id="prod-audience" placeholder="e.g. Dog owners, Cat parents">
+  </div>
+
+  <button class="btn btn-primary" onclick="generateDescription()" style="width:100%;justify-content:center;">✨ Generate Description</button>
+
+  <div class="loading" id="loading">
+    <span class="spinner"></span> Generating with AI...
+  </div>
+
+  <div class="result-box" id="result">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <strong>Generated Description</strong>
+      <button class="copy-btn" onclick="copyResult()">📋 Copy</button>
+    </div>
+    <div id="result-content"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div><div class="logo-text">🐶 Paw<span>Pals</span></div><p style="margin-top:12px;">India's trusted dropshipping store for premium pet products.</p></div>
+    <div><h3>Quick Links</h3><ul><li><a href="../index.html">Home</a></li><li><a href="../products.html">Products</a></li><li><a href="index.html">Tools</a></li></ul></div>
+    <div><h3>Tools</h3><ul><li><a href="ai-description.html">AI Description</a></li><li><a href="facebook-feed.html">Facebook Feed</a></li><li><a href="product-importer.html">Product Importer</a></li></ul></div>
+    <div><h3>Contact</h3><ul><li><a href="#">📧 hello@pawpals.in</a></li><li><a href="#">💬 WhatsApp</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 PawPals India. Automation tools for dropshipping.</p></div>
+</footer>
+
+<script src="../js/data.js"></script>
+<script>
+let selectedTone = 'Professional';
+
+function selectTone(el) {
+  document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTone = el.textContent;
+}
+
+let usageCount = parseInt(localStorage.getItem('ai_desc_count') || '0');
+
+async function generateDescription() {
+  const name = document.getElementById('prod-name').value.trim();
+  const category = document.getElementById('prod-category').value;
+  const features = document.getElementById('prod-features').value.trim();
+  const audience = document.getElementById('prod-audience').value.trim();
+
+  if (!name) { showToast('Please enter a product name', 'error'); return; }
+
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('result').style.display = 'none';
+
+  const prompt = `You are an expert ecommerce copywriter for pet products. Generate a complete product listing for:
+
+Product: ${name}
+Category: ${category || 'General'}
+Key Features: ${features || 'Various features'}
+Target Audience: ${audience || 'Pet owners'}
+Tone: ${selectedTone}
+
+Respond ONLY with valid JSON:
+{
+  "short_description": "1-2 sentence summary for product grid (max 120 chars)",
+  "long_description": "Full 3-4 sentence product description highlighting benefits",
+  "bullet_points": ["Benefit 1", "Benefit 2", "Benefit 3", "Benefit 4", "Benefit 5"],
+  "seo_title": "SEO-optimized product title (max 60 chars)",
+  "seo_keywords": ["keyword1", "keyword2", "keyword3"]
+}`;
+
+  const body = JSON.stringify({
+    model: 'meta-llama/llama-3.1-8b-instruct',
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 1000,
+    temperature: 0.7
+  });
+
+  try {
+    const options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body };
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', options);
+    const data = await resp.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    let parsed;
+    try {
+      const cleaned = content.replace(/^```(?:json)?\s*|```$/g, '').trim();
+      parsed = JSON.parse(cleaned);
+    } catch(e) {
+      parsed = { long_description: content, bullet_points: [] };
+    }
+
+    usageCount++;
+    localStorage.setItem('ai_desc_count', String(usageCount));
+
+    const resultDiv = document.getElementById('result');
+    const contentDiv = document.getElementById('result-content');
+    contentDiv.innerHTML = `
+      <p><strong>📝 Short Description:</strong><br>${parsed.short_description || parsed.long_description || ''}</p>
+      <hr style="margin:12px 0;border-color:var(--border);">
+      <p><strong>📄 Long Description:</strong><br>${parsed.long_description || ''}</p>
+      ${parsed.bullet_points ? `
+        <hr style="margin:12px 0;border-color:var(--border);">
+        <strong>✨ Key Benefits:</strong><ul style="margin-top:8px;padding-left:20px;">
+          ${parsed.bullet_points.map(b => `<li>${b}</li>`).join('')}
+        </ul>` : ''}
+      ${parsed.seo_title ? `
+        <hr style="margin:12px 0;border-color:var(--border);">
+        <p><strong>🔍 SEO Title:</strong> ${parsed.seo_title}</p>` : ''}
+      ${parsed.seo_keywords ? `
+        <p><strong>🏷️ SEO Keywords:</strong> ${parsed.seo_keywords.join(', ')}</p>` : ''}
+    `;
+    resultDiv.style.display = 'block';
+    showToast('Description generated! 🎉', 'success');
+  } catch(err) {
+    showToast('Failed to generate. OpenRouter might be down.', 'error');
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+  }
+}
+
+function copyResult() {
+  const text = document.getElementById('result-content').innerText;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied! 📋', 'success'));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automation Tools — PawPals India</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+.tool-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: all 0.3s; }
+.tool-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.tool-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.tool-card h3 { font-weight: 700; margin-bottom: 8px; }
+.tool-card p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 16px; line-height: 1.6; }
+.tool-card .status { font-size: 0.8rem; display: inline-block; padding: 2px 10px; border-radius: var(--radius-full); margin-bottom: 12px; }
+.status-live { background: #D1FAE5; color: #065F46; }
+.status-new { background: #DBEAFE; color: #1E40AF; }
+.tool-header { text-align: center; padding: 40px 20px 0; }
+.tool-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+.tool-header p { color: var(--text-light); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo"><span class="logo-icon">🐶</span><span>Paw<span>Pals</span></span></a>
+    <nav class="nav">
+      <a href="../index.html">Home</a>
+      <a href="../products.html">Products</a>
+      <a href="../orders.html">Orders</a>
+      <a href="index.html" class="active">Tools</a>
+    </nav>
+    <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="tool-header">
+  <h1>⚙️ Dropshipping Automation Tools</h1>
+  <p>Everything you need to automate your zero-investment dropshipping store.</p>
+</div>
+
+<div class="tools-grid">
+  <a href="ai-description.html" class="tool-card" style="text-decoration:none;color:inherit;">
+    <div class="tool-icon">🤖</div>
+    <span class="status status-live">● Live</span>
+    <h3>AI Product Description Generator</h3>
+    <p>Generate professional product descriptions, SEO titles, and bullet points using AI. Powered by OpenRouter free model.</p>
+  </a>
+
+  <a href="facebook-feed.html" class="tool-card" style="text-decoration:none;color:inherit;">
+    <div class="tool-icon">📱</div>
+    <span class="status status-live">● Live</span>
+    <h3>Facebook & Instagram Feed</h3>
+    <p>Generate CSV feed for Facebook Shops, Instagram Shopping, and Google Merchant. Ready to upload.</p>
+  </a>
+
+  <a href="../orders.html" class="tool-card" style="text-decoration:none;color:inherit;">
+    <div class="tool-icon">📧</div>
+    <span class="status status-live">● Live</span>
+    <h3>Auto-Order Forwarding</h3>
+    <p>Forward orders to your supplier via email with one click. Includes order summary, customer details, and supplier product links.</p>
+  </a>
+
+  <a href="product-importer.html" class="tool-card" style="text-decoration:none;color:inherit;">
+    <div class="tool-icon">📦</div>
+    <span class="status status-live">● Live</span>
+    <h3>Bulk Product Importer</h3>
+    <p>Import products from JSON or CSV. Parse supplier CSVs. Export all products for backup.</p>
+  </a>
+
+  <a href="../orders.html" class="tool-card" style="text-decoration:none;color:inherit;">
+    <div class="tool-icon">📊</div>
+    <span class="status status-live">● Live</span>
+    <h3>Order Export (CSV/JSON)</h3>
+    <p>Export all orders in CSV or JSON format. Track order statuses (new → forwarded → delivered).</p>
+  </a>
+
+  <a href="https://cometodaddy68-afk.github.io/Pawpals/" class="tool-card" style="text-decoration:none;color:inherit;">
+    <div class="tool-icon">🔗</div>
+    <span class="status status-live">● Live</span>
+    <h3>WhatsApp Share Links</h3>
+    <p>Share products directly to WhatsApp, Instagram, and Facebook from product pages.</p>
+  </a>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div><div class="logo-text">🐶 Paw<span>Pals</span></div><p style="margin-top:12px;">India's trusted dropshipping store for premium pet products.</p></div>
+    <div><h3>Quick Links</h3><ul><li><a href="../index.html">Home</a></li><li><a href="../products.html">Products</a></li><li><a href="../orders.html">Orders</a></li><li><a href="index.html">Tools</a></li></ul></div>
+    <div><h3>Automation</h3><ul><li><a href="ai-description.html">AI Description</a></li><li><a href="facebook-feed.html">Facebook Feed</a></li><li><a href="product-importer.html">Product Importer</a></li></ul></div>
+    <div><h3>Contact</h3><ul><li><a href="#">📧 hello@pawpals.in</a></li><li><a href="#">💬 WhatsApp</a></li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2026 PawPals India. Full dropshipping automation suite.</p></div>
+</footer>
+
+<script src="../js/data.js"></script>
+<script src="../js/cart.js"></script>
+<script src="../js/main.js"></script>
+</body>
+</html>
