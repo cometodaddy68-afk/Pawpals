@@ -89,6 +89,14 @@
     <input type="text" id="prod-audience" placeholder="e.g. Dog owners, Cat parents">
   </div>
 
+  <div class="form-group">
+    <label>OpenRouter API Key <span style="font-weight:400;color:var(--text-muted);">(get one free at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>)</span></label>
+    <div style="display:flex;gap:8px;">
+      <input type="password" id="api-key" placeholder="sk-or-v1-..." style="flex:1;">
+      <button class="btn btn-secondary" onclick="document.getElementById('api-key').type=document.getElementById('api-key').type==='password'?'text':'password'" style="white-space:nowrap;">👁️</button>
+    </div>
+  </div>
+
   <button class="btn btn-primary" onclick="generateDescription()" style="width:100%;justify-content:center;">✨ Generate Description</button>
 
   <div class="loading" id="loading">
@@ -126,13 +134,28 @@ function selectTone(el) {
 
 let usageCount = parseInt(localStorage.getItem('ai_desc_count') || '0');
 
+function getApiKey() {
+  const input = document.getElementById('api-key');
+  let key = input.value.trim();
+  if (!key) key = localStorage.getItem('openrouter_key') || '';
+  if (key) localStorage.setItem('openrouter_key', key);
+  return key;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('openrouter_key') || '';
+  if (saved) document.getElementById('api-key').value = saved;
+});
+
 async function generateDescription() {
   const name = document.getElementById('prod-name').value.trim();
   const category = document.getElementById('prod-category').value;
   const features = document.getElementById('prod-features').value.trim();
   const audience = document.getElementById('prod-audience').value.trim();
+  const apiKey = getApiKey();
 
   if (!name) { showToast('Please enter a product name', 'error'); return; }
+  if (!apiKey) { showToast('Please enter your OpenRouter API key', 'error'); return; }
 
   document.getElementById('loading').style.display = 'flex';
   document.getElementById('result').style.display = 'none';
@@ -162,15 +185,20 @@ Respond ONLY with valid JSON:
   });
 
   try {
-    const options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body };
+    const options = { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body };
     const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', options);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
     const content = data.choices?.[0]?.message?.content || '';
+    if (!content) throw new Error('AI response empty');
 
     let parsed;
     try {
       const cleaned = content.replace(/^```(?:json)?\s*|```$/g, '').trim();
-      parsed = JSON.parse(cleaned);
+      const braceIdx = cleaned.indexOf('{');
+      const endBrace = cleaned.lastIndexOf('}');
+      const jsonStr = braceIdx >= 0 && endBrace > braceIdx ? cleaned.slice(braceIdx, endBrace + 1) : cleaned;
+      parsed = JSON.parse(jsonStr);
     } catch(e) {
       parsed = { long_description: content, bullet_points: [] };
     }
